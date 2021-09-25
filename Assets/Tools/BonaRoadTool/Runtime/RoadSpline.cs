@@ -33,6 +33,7 @@ namespace Fyrvall.BonaRoadTool
         [HideInInspector]
         public bool IsEditable = false;
 
+        [HideInInspector]
         public List<SplineControlPoint> ControlPoints = new List<SplineControlPoint>();
 
         public void Reset()
@@ -107,7 +108,7 @@ namespace Fyrvall.BonaRoadTool
                 previousPoint.ForwardTangent = previousPoint.Position + previousPoint.Direction * Vector3.forward * halfDistance;
                 controlPoint.BackwardsTangent = controlPoint.Position + controlPoint.Direction * Vector3.back * halfDistance;
 
-                var halfEstimatedCurveDistance = BezierCurve.BezierCurveLength(previousPoint.Position, previousPoint.ForwardTangent, controlPoint.BackwardsTangent, controlPoint.Position, 100) / DistanceStep;
+                var halfEstimatedCurveDistance = BezierCurve.BezierCurveLength(previousPoint.Position, previousPoint.ForwardTangent, controlPoint.BackwardsTangent, controlPoint.Position, 100) / 2;
                 var controlPointDirection = Quaternion.LookRotation(controlPoint.Position - previousPoint.Position).normalized;
 
                 var previousRotationFactor = (Quaternion.Dot(previousPoint.Direction, controlPointDirection) + 1f) / 2;
@@ -124,14 +125,14 @@ namespace Fyrvall.BonaRoadTool
                 controlPoint.ForwardTangent = controlPoint.Position + controlPoint.Direction * Vector3.forward * halfDistance;
                 nextPoint.BackwardsTangent = nextPoint.Position + nextPoint.Direction * Vector3.back * halfDistance;
 
-                var halfEstimatedCurveDistance = BezierCurve.BezierCurveLength(controlPoint.Position, controlPoint.ForwardTangent, nextPoint.BackwardsTangent, nextPoint.Position, 100) / DistanceStep;
+                var halfEstimatedCurveDistance = BezierCurve.BezierCurveLength(controlPoint.Position, controlPoint.ForwardTangent, nextPoint.BackwardsTangent, nextPoint.Position, 100) / 2;
                 var controlPointDirection = Quaternion.LookRotation(controlPoint.Position - nextPoint.Position).normalized;
 
                 var nextRotationFactor = (Quaternion.Dot(nextPoint.Direction, controlPointDirection) + 1f) / 2;
-                nextPoint.SegmentsToNext = Mathf.Max(1, Mathf.FloorToInt((halfEstimatedCurveDistance / Smoothness) * nextRotationFactor));
+                nextPoint.SegmentsToNext = Mathf.Max(1, Mathf.FloorToInt((halfEstimatedCurveDistance * Smoothness) * nextRotationFactor));
 
-                var rotationFactor = (Quaternion.Dot(controlPoint.Direction, controlPointDirection) + 1f) / 2;
-                controlPoint.SegmentsToPrevious = Mathf.Max(1, Mathf.FloorToInt((halfEstimatedCurveDistance / Smoothness) * rotationFactor));
+                var rotationFactor = (Quaternion.Dot(controlPointDirection, controlPoint.Direction) + 1f) / 2;
+                controlPoint.SegmentsToPrevious = Mathf.Max(1, Mathf.FloorToInt((halfEstimatedCurveDistance * Smoothness) * rotationFactor));
             }
         }
 
@@ -155,18 +156,18 @@ namespace Fyrvall.BonaRoadTool
 
                 var nextPoint = ControlPoints[controlPoint.NextIndex];
 
-                var steps = controlPoint.SegmentsToNext;
-                var pairStepDistance = 1f / (steps + 1);
+                var firstSteps = controlPoint.SegmentsToNext + nextPoint.SegmentsToPrevious;
+                var firstStepDistance = 1f / firstSteps;
 
-                // Insert N extra control points along the curve.
-                for (int i = 0; i <= steps; i++) {
-                    var distanceFactor = (i + 1) * pairStepDistance;
+                // Insert N extra control points along the curve for the first half.
+                for (int i = 0; i <= firstSteps; i++) {
+                    var distanceFactor = i * firstStepDistance;
                     var position = BezierCurve.CubicCurve(controlPoint.Position, controlPoint.ForwardTangent, nextPoint.BackwardsTangent, nextPoint.Position, distanceFactor);
-                    var tangent = BezierCurve.CubicCurveDerivative(controlPoint.Position, nextPoint.ForwardTangent, nextPoint.BackwardsTangent, nextPoint.Position, distanceFactor).normalized;
+                    var tangent = BezierCurve.CubicCurveDerivative(controlPoint.Position, controlPoint.ForwardTangent, nextPoint.BackwardsTangent, nextPoint.Position, distanceFactor).normalized;
 
                     var firstRotation = Quaternion.Euler(0, 0, controlPoint.Direction.eulerAngles.z);
                     var secondRotation = Quaternion.Euler(0, 0, nextPoint.Direction.eulerAngles.z);
-                    var rotation = Quaternion.Lerp(firstRotation, secondRotation, steps * pairStepDistance);
+                    var rotation = Quaternion.Lerp(firstRotation, secondRotation, firstSteps * firstStepDistance);
 
                     result.Add(new SplineControlPoint { Position = position, Direction = Quaternion.LookRotation(tangent) * rotation });
                 }
