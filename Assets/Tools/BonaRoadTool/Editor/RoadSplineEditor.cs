@@ -127,21 +127,6 @@ namespace Fyrvall.BonaRoadTool
             }
         }
 
-        //private System.Tuple<SplineControlPoint, SplineControlPoint> GetSelectedControlPoint(RaycastHit raycastHit, RoadSpline spline)
-        //{
-        //    // Each segment consist of a |RoundSegments| quad, for a total of RoundSegments * 2 tris or RoundSegments * 6 vertices.
-        //    var segmentIndex = raycastHit.triangleIndex / (2 * spline.RoundSegments);
-        //    var placedSegmentIndex = Mathf.Clamp((segmentIndex + 1) / (spline.SmoothnessLevel + 1), 0, int.MaxValue);
-        //    var previousSegmentIndex = Mathf.Clamp(segmentIndex / (spline.SmoothnessLevel + 1), 0, int.MaxValue);
-
-        //    if (previousSegmentIndex == placedSegmentIndex) {
-        //        previousSegmentIndex = placedSegmentIndex + 1;
-        //    }
-
-        //    return new System.Tuple<SplineControlPoint, SplineControlPoint>(spline.ControlPoints[placedSegmentIndex], spline.ControlPoints[previousSegmentIndex]);
-        //}
-
-
         private void RemoveControlPoint(Event currentEvent, RoadSpline spline, InScenePosition inScenePosition)
         {
             if (currentEvent.type == EventType.MouseDown) {

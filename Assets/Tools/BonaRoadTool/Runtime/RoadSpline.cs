@@ -15,6 +15,7 @@ namespace Fyrvall.BonaRoadTool
             public List<Vector3> Vertices = new List<Vector3>();
             public List<Vector3> Normals = new List<Vector3>();
             public List<Vector2> Uvs = new List<Vector2>();
+            public List<Vector2> Uvs2 = new List<Vector2>();
             public List<int> Triangles = new List<int>();
 
             public int CurrentIndex = 0;
@@ -92,6 +93,7 @@ namespace Fyrvall.BonaRoadTool
                 vertices = meshData.Vertices.ToArray(),
                 normals = meshData.Normals.ToArray(),
                 uv = meshData.Uvs.ToArray(),
+                uv2 = meshData.Uvs2.ToArray(),
                 triangles = meshData.Triangles.ToArray()
             };
 
@@ -223,6 +225,8 @@ namespace Fyrvall.BonaRoadTool
             // Make the X axis a continous point along the edge and the y axis continous along the middle. Makes it looks smoother
             meshData.Uvs.Add(new Vector2(0, meshData.CurrentUvOffset * UvScaling));
             meshData.Uvs.Add(new Vector2(1, meshData.CurrentUvOffset * UvScaling));
+            meshData.Uvs2.Add(new Vector2(0, meshData.CurrentUvOffset * UvScaling * 0.5f));
+            meshData.Uvs2.Add(new Vector2(1, meshData.CurrentUvOffset * UvScaling));
 
             if (lastControlPoint != null) {
                 meshData.Triangles.AddRange(new int[] { meshData.CurrentIndex - 2, meshData.CurrentIndex, meshData.CurrentIndex - 1, meshData.CurrentIndex, meshData.CurrentIndex + 1, meshData.CurrentIndex - 1 });

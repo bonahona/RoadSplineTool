@@ -9,20 +9,18 @@ Shader "Custom/RoadShader"
         _Metallic ("Metallic", 2D) = "white" {}
         _Occlusion("AO", 2D) = "white" {}
         _Alpha("Alpha", 2D) = "white" {}
+        _Clipping("Clipping", Range(0, 1)) = 0
         _HeightOffset("Height Offset", Range(0, 1)) = 0.01
     }
     SubShader
     {
-        Tags {
-            "RenderType" = "Transparent"
-            "Queue" = "Transparent"
-        }
+        Tags { "RenderType"="Transparent" }
 
         LOD 200
 
         CGPROGRAM
         // Physically based Standard lighting model, and enable shadows on all light types
-        #pragma surface surf Standard fullforwardshadows alpha vertex:vert
+        #pragma surface surf Standard fullforwardshadows vertex:vert
 
         // Use shader model 3.0 target, to get nicer looking lighting
         #pragma target 3.0
@@ -46,6 +44,7 @@ Shader "Custom/RoadShader"
 
         fixed4 _Color;
         fixed _HeightOffset;
+        float _Clipping;
 
         void vert(inout appdata_full v) {
             v.vertex.y += _HeightOffset;
@@ -62,7 +61,9 @@ Shader "Custom/RoadShader"
             o.Metallic = tex2D(_MainTex, IN.uv_Metallic).r;
             o.Smoothness = tex2D(_Metallic, IN.uv_Smoothness).r;
             o.Occlusion = tex2D(_Occlusion, IN.uv_Occlusion).r;
-            o.Alpha = tex2D(_Alpha, IN.uv_Alpha).r;
+            fixed4 alpha = tex2D(_Alpha, IN.uv_Alpha);
+            clip(alpha * c - _Clipping);
+            o.Alpha = c.a;
         }
         ENDCG
     }
