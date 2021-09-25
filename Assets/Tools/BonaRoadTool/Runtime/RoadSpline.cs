@@ -99,7 +99,7 @@ namespace Fyrvall.BonaRoadTool
             meshRender.material = Material;
         }
 
-        public void UpdateControlPoint(SplineControlPoint controlPoint)
+        public void UpdateControlPoint(SplineControlPoint controlPoint, bool chainUpdate = true)
         {
             if (controlPoint.PreviousIndex != -1) {
                 var previousPoint = ControlPoints[controlPoint.PreviousIndex];
@@ -116,6 +116,10 @@ namespace Fyrvall.BonaRoadTool
 
                 var rotationFactor = (Quaternion.Dot(controlPoint.Direction, controlPointDirection) + 1f) / 2;
                 controlPoint.SegmentsToPrevious = Mathf.Max(1, Mathf.FloorToInt((halfEstimatedCurveDistance / Smoothness) * rotationFactor));
+
+                if (chainUpdate) {
+                    UpdateControlPoint(previousPoint, false);
+                }
             }
 
             if (controlPoint.NextIndex != -1) {
@@ -133,6 +137,10 @@ namespace Fyrvall.BonaRoadTool
 
                 var rotationFactor = (Quaternion.Dot(controlPointDirection, controlPoint.Direction) + 1f) / 2;
                 controlPoint.SegmentsToPrevious = Mathf.Max(1, Mathf.FloorToInt((halfEstimatedCurveDistance * Smoothness) * rotationFactor));
+
+                if (chainUpdate) {
+                    UpdateControlPoint(nextPoint, false);
+                }
             }
         }
 
